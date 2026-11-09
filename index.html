@@ -44,7 +44,7 @@ const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app);
 const $=document.getElementById('app'),NAV=document.getElementById('nav');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inv=new URLSearchParams(location.search).get('i')||'';
-let kept={},me=null,isAdmin=false,player=null,ready=false,tab='paris',rid=null,mid=null,rens=[],matchs={},mSubs={},bets={},players=[],msg='',inviteTok=null,importJson=null,adminRid=null;
+let kept={},me=null,isAdmin=false,player=null,ready=false,tab=location.hash==='#admin'?'admin':'paris',rid=null,mid=null,rens=[],matchs={},mSubs={},bets={},players=[],msg='',inviteTok=null,importJson=null,adminRid=null;
 onSnapshot(query(collection(db,'rencontres'),orderBy('debut','desc')),s=>{rens=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{msg='Connexion impossible : vérifie firebase-config.js.';render()});
 onSnapshot(query(collection(db,'players'),orderBy('points','desc')),s=>{players=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{});
 let betUnsub=null;
@@ -57,8 +57,8 @@ const ms=r=>r.debut.toMillis(),open=r=>Date.now()<ms(r);
 const fmt=r=>new Date(ms(r)).toLocaleString('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
 const who=p=>`<div>${esc(p.nom)}<span class="niv">${esc(p.niv||'')}</span>${p.pct!=null?` <span class="mut">${esc(p.pct)}% de victoires</span>`:''}${p.stat?` <span class="mut">· ${esc(p.stat)}</span>`:''}</div>`;
 const team=(r,k)=>esc(k==='a'?r.a:r.b);
-function join(){return`<div class="card"><h2 style="margin-top:0">Rejoindre le jeu</h2><p class="mut">Choisis ton pseudo. Il apparaîtra dans le classement.</p><input id="pseudo" maxlength="20" placeholder="Ton pseudo"><button class="go" data-act="join">Rejoindre</button><p class="err">${esc(msg)}</p></div>`}
-function noAccess(){return`<div class="card"><h2 style="margin-top:0">Accès sur invitation</h2><p>Ouvre le lien d'invitation envoyé par le club pour jouer.</p></div>`}
+function join(){return`<div class="card"><h2 style="margin-top:0">Rejoindre le jeu</h2><p class="mut">Choisis ton pseudo. Il apparaîtra dans le classement.</p><input id="pseudo" maxlength="20" placeholder="Ton pseudo"><button class="go" data-act="join">Rejoindre</button><p class="err">${esc(msg)}</p></div><p style="text-align:center"><a class="lnk" data-act="toadmin">Admin</a></p>`}
+function noAccess(){return`<div class="card"><h2 style="margin-top:0">Accès sur invitation</h2><p>Ouvre le lien d'invitation envoyé par le club pour jouer.</p></div><p style="text-align:center"><a class="lnk" data-act="toadmin">Admin</a></p>`}
 function rencontres(){return rens.map(r=>`<div class="card tap" data-act="open|${r.id}"><p class="vs">${esc(r.a)} <span class="mut">contre</span> ${esc(r.b)}</p><span class="mut">${esc(r.competition)} ${esc(r.journee)} · ${fmt(r)}</span><br><span class="tag">${open(r)?'Paris ouverts':'Paris fermés'}</span></div>`).join('')||'<p class="mut">Aucune rencontre pour le moment.</p>'}
 function rencontreView(r){loadMatchs(r.id);const l=matchs[r.id]||[];
 return`<p><a class="lnk" data-act="back">‹ Rencontres</a></p><div class="card"><p class="vs">${esc(r.a)} contre ${esc(r.b)}</p><span class="mut">${esc(r.competition)} ${esc(r.journee)} · ${fmt(r)}</span><br><span class="tag">${open(r)?'Paris ouverts jusqu\'au début de la rencontre':'Paris fermés'}</span></div>`+l.map(m=>{const c=bets[r.id+'_'+m.id];return`<div class="card tap" data-act="match|${m.id}"><b>${esc(m.nom)}</b> ${m.winner?`<span class="tag">Victoire : ${team(r,m.winner)}</span>`:''}<br><span class="mut">${m.a.map(p=>esc(p.nom)).join(' / ')} vs ${m.b.map(p=>esc(p.nom)).join(' / ')}</span><br>${c?`<span class="tag ${m.winner?(m.winner===c?'ok':'ko'):''}">Ton pari : ${team(r,c)}${m.winner?(m.winner===c?' · +10':' · raté'):''}</span>`:`<span class="tag">${open(r)?'Pas encore parié':'Pas de pari'}</span>`}</div>`}).join('')}
