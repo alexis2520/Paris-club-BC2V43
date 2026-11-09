@@ -1,0 +1,24 @@
+APPLI DE PRONOS INTERCLUBS - BCV 43
+===================================
+Fichiers : index.html, firebase-config.js, firestore.rules, logo.png
+
+A. FIREBASE (gratuit)
+1. Va sur console.firebase.google.com > "Créer un projet" (désactive Google Analytics).
+2. Menu "Build" > "Firestore Database" > "Créer une base de données" > région europe-west > mode production.
+3. Onglet "Règles" : ouvre firestore.rules, remplace VOTRE_EMAIL_ADMIN par ton email, copie tout le texte dans la console, clique "Publier".
+4. "Build" > "Authentication" > "Commencer" > active "E-mail/Mot de passe".
+   - Onglet "Users" > "Ajouter un utilisateur" : ton email + un mot de passe (c'est ton accès admin).
+   - Onglet "Settings" > "User actions" : DÉCOCHE "Enable create (sign-up)".
+   - Onglet "Settings" > "Authorized domains" : ajoute ton-pseudo.github.io.
+5. Roue dentée > "Paramètres du projet" > "Vos applications" > icône web </> > enregistre l'appli > copie les 4 valeurs de firebaseConfig (apiKey, authDomain, projectId, appId) dans firebase-config.js.
+
+B. GITHUB PAGES
+6. Crée un dépôt GitHub public, "Add file" > "Upload files" : envoie index.html, firebase-config.js, logo.png.
+7. "Settings" > "Pages" > Branch "main", dossier "/ (root)" > Save. Ton lien apparaît après 1-2 minutes.
+
+C. UTILISATION
+8. Ouvre le lien, clique "Admin" en bas, connecte-toi.
+9. Génère des codes (1 par membre) et distribue-les. Crée une rencontre.
+10. Les membres ouvrent le lien, entrent leur code et votent. Après la rencontre : "Fermer" puis "Résultat".
+
+ANONYMAT : le vote est enregistré sans le code. Le code sert seulement à empêcher de voter 2 fois. Personne, admin compris, ne peut savoir qui a voté quoi. Les points se calculent sur le téléphone de chacun.

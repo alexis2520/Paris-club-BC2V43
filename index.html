@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pronos interclubs</title>
+<link rel="icon" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16130f;--red:#d4202a;--bg:#f1f2f4;--card:#fff;--mut:#6b6f76}
+@media(prefers-color-scheme:dark){:root{--ink:#f1f2f4;--bg:#121110;--card:#1e1c1a;--mut:#9a9da3}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Archivo,system-ui,sans-serif}
+main{max-width:520px;margin:0 auto;padding:16px 16px 48px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+header img{width:56px;height:56px}h1{font:22px/1.1 'Archivo Black',sans-serif;margin:0}
+h2{font:17px 'Archivo Black',sans-serif;margin:24px 0 8px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(128,128,128,.2)}
+.mut{color:var(--mut);font-size:14px}
+input,button{font:inherit;border-radius:10px;border:1px solid rgba(128,128,128,.4);padding:12px;background:var(--card);color:var(--ink);width:100%;margin-top:8px}
+button{cursor:pointer;font-weight:600}button.go{background:var(--red);color:#fff;border-color:var(--red)}
+button.small{width:auto;padding:8px 12px;margin:6px 6px 0 0;font-size:14px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.vs{font:20px 'Archivo Black',sans-serif;margin:0 0 4px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.duo button{padding:26px 8px;font:17px 'Archivo Black',sans-serif;color:#fff;border:0;margin:0}
+.duo .us{background:var(--red)}.duo .them{background:#16130f}
+.bar{height:34px;border-radius:8px;overflow:hidden;display:flex;margin-top:12px;background:#8883}
+.bar i{display:flex;align-items:center;padding-left:10px;color:#fff;font-style:normal;font-weight:600;font-size:14px;min-width:0;white-space:nowrap}
+.bar .a{background:var(--red)}.bar .b{background:#16130f;justify-content:flex-end;padding:0 10px 0 0}
+.tag{display:inline-block;font-size:13px;font-weight:600;padding:3px 9px;border-radius:99px;background:#8883}
+.tag.ok{background:#1f8a4c;color:#fff}.tag.ko{background:#8a1f1f;color:#fff}
+.pts{font:34px 'Archivo Black',sans-serif;color:var(--red)}
+.err{color:var(--red);font-weight:600;min-height:20px}
+a.lnk{color:var(--mut);font-size:14px;cursor:pointer;text-decoration:underline}
+pre{white-space:pre-wrap;background:#8882;padding:10px;border-radius:8px;font-size:14px}
+</style></head><body><main id="app"></main>
+<script type="module">
+import {firebaseConfig,NOM_CLUB} from './firebase-config.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,writeBatch,query,orderBy} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+const app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app);
+const $=document.getElementById('app'),LS=localStorage;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let code=LS.bcv_code||'',hist=JSON.parse(LS.bcv_h||'{}'),matches=[],counts={},subs={},view='vote',admin=null,msg='',codesList=null;
+const head=`<header><img src="logo.png" alt="Logo ${esc(NOM_CLUB)}"><div><h1>Pronos interclubs</h1><span class="mut">${esc(NOM_CLUB)} · points virtuels, votes anonymes</span></div></header>`;
+onSnapshot(query(collection(db,'matches'),orderBy('date','desc')),s=>{matches=s.docs.map(d=>({id:d.id,...d.data()}));matches.forEach(m=>{if(!subs[m.id])subs[m.id]=onSnapshot(collection(db,'matches',m.id,'votes'),v=>{let us=0,them=0;v.forEach(x=>x.data().choice==='us'?us++:them++);counts[m.id]={us,them};render()},()=>{})});render()},e=>{msg='Connexion impossible : vérifie firebase-config.js.';render()});
+onAuthStateChanged(auth,u=>{admin=u;render()});
+const fmt=d=>d?new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}):'';
+const points=()=>matches.reduce((t,m)=>t+(m.result&&hist[m.id]===m.result?10:0),0);
+function clubScore(){const done=matches.filter(m=>m.result&&counts[m.id]&&counts[m.id].us!==counts[m.id].them);const ok=done.filter(m=>(counts[m.id].us>counts[m.id].them?'us':'them')===m.result).length;return done.length?`Le club avait vu juste ${ok} fois sur ${done.length}.`:''}
+function matchCard(m){const c=counts[m.id]||{us:0,them:0},tot=c.us+c.them,mine=hist[m.id],pu=tot?Math.round(c.us/tot*100):50;
+let h=`<div class="card"><p class="vs">${esc(NOM_CLUB)} vs ${esc(m.adv)}</p><span class="mut">${fmt(m.date)}</span>`;
+if(m.status==='open'&&!mine)h+=`<div class="duo"><button class="us" data-vote="us|${m.id}">${esc(NOM_CLUB)}</button><button class="them" data-vote="them|${m.id}">${esc(m.adv)}</button></div>`;
+else{h+=`<div class="bar"><i class="a" style="width:${pu}%">${tot?pu+'%':''}</i><i class="b" style="width:${100-pu}%">${tot?100-pu+'%':''}</i></div><p class="mut" style="margin:8px 0 0">${tot} vote${tot>1?'s':''} · ton choix : ${mine?esc(mine==='us'?NOM_CLUB:m.adv):'aucun'}</p>`;
+if(m.result)h+=`<p style="margin:8px 0 0"><span class="tag">Vainqueur : ${esc(m.result==='us'?NOM_CLUB:m.adv)}</span> ${mine?(mine===m.result?'<span class="tag ok">+10 points</span>':'<span class="tag ko">Raté</span>'):''}</p>`;
+else if(m.status!=='open')h+=`<p class="mut" style="margin:8px 0 0">Votes fermés, résultat bientôt.</p>`}
+return h+'</div>'}
+function voteView(){if(!code)return`<div class="card"><h2 style="margin-top:0">Entre ton code</h2><p class="mut">Ton code personnel t'a été donné par le club.</p><input id="code" placeholder="Code à 6 caractères" autocapitalize="characters" autocomplete="off"><button class="go" data-act="login">Entrer</button><p class="err">${esc(msg)}</p></div>`;
+return`<div class="card"><span class="mut">Tes points</span><div class="pts">${points()}</div><span class="mut">${clubScore()}</span></div>`+(matches.length?matches.map(matchCard).join(''):`<p class="mut">${esc(msg)||'Aucune rencontre pour le moment.'}</p>`)+`<p><a class="lnk" data-act="logout">Changer de code</a></p>`}
+function adminView(){if(!admin)return`<div class="card"><h2 style="margin-top:0">Admin</h2><input id="em" type="email" placeholder="Email admin"><input id="pw" type="password" placeholder="Mot de passe"><button class="go" data-act="alogin">Se connecter</button><p class="err">${esc(msg)}</p></div>`;
+let h=`<div class="card"><h2 style="margin-top:0">Nouvelle rencontre</h2><input id="adv" placeholder="Club adverse"><input id="dt" type="date"><button class="go" data-act="addm">Créer</button></div><h2>Rencontres</h2>`;
+h+=matches.map(m=>`<div class="card"><b>${esc(NOM_CLUB)} vs ${esc(m.adv)}</b> <span class="mut">${fmt(m.date)} · ${m.status==='open'?'ouvert':'fermé'}${m.result?' · gagnant : '+esc(m.result==='us'?NOM_CLUB:m.adv):''}</span><br>
+<button class="small" data-act="tog|${m.id}">${m.status==='open'?'Fermer les votes':'Rouvrir'}</button><button class="small" data-act="res|${m.id}|us">${esc(NOM_CLUB)} gagne</button><button class="small" data-act="res|${m.id}|them">${esc(m.adv)} gagne</button><button class="small" data-act="del|${m.id}">Supprimer</button></div>`).join('');
+h+=`<div class="card"><h2 style="margin-top:0">Codes des membres</h2><input id="nb" type="number" min="1" max="100" value="20"><button class="go" data-act="gen">Générer des codes</button><button data-act="list">Afficher tous les codes</button>${codesList?`<pre>${codesList.join('\n')}</pre>`:''}<p class="err">${esc(msg)}</p></div><p><a class="lnk" data-act="alogout">Se déconnecter</a></p>`;return h}
+function render(){const keep={};document.querySelectorAll('input').forEach(i=>keep[i.id]=i.value);
+$.innerHTML=head+(view==='admin'?adminView():voteView())+`<p style="text-align:center"><a class="lnk" data-act="${view==='admin'?'tovote':'toadmin'}">${view==='admin'?'Retour aux pronos':'Admin'}</a></p>`;
+document.querySelectorAll('input').forEach(i=>{if(keep[i.id]!=null&&i.type!=='number')i.value=keep[i.id]})}
+const alpha='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',rnd=()=>Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>alpha[b%alpha.length]).join('');
+$.addEventListener('click',async e=>{const t=e.target.closest('[data-act],[data-vote]');if(!t)return;msg='';
+try{
+if(t.dataset.vote){const[ch,id]=t.dataset.vote.split('|');t.disabled=true;
+const vref=doc(db,'voted',code+'_'+id);if((await getDoc(vref)).exists()){msg='Tu as déjà voté pour cette rencontre.';hist[id]=hist[id]||ch}else{const b=writeBatch(db);b.set(vref,{code,match:id});b.set(doc(collection(db,'matches',id,'votes')),{choice:ch});await b.commit();hist[id]=ch}
+LS.bcv_h=JSON.stringify(hist);return render()}
+const[a,id,x]=t.dataset.act.split('|');
+if(a==='login'){const c=document.getElementById('code').value.trim().toUpperCase();if(!(await getDoc(doc(db,'codes',c))).exists()){msg='Code inconnu. Vérifie et réessaie.'}else{code=c;LS.bcv_code=c}}
+else if(a==='logout'){code='';LS.removeItem('bcv_code')}
+else if(a==='toadmin')view='admin';else if(a==='tovote')view='vote';
+else if(a==='alogin'){await signInWithEmailAndPassword(auth,document.getElementById('em').value,document.getElementById('pw').value)}
+else if(a==='alogout'){await signOut(auth)}
+else if(a==='addm'){const adv=document.getElementById('adv').value.trim(),dt=document.getElementById('dt').value;if(!adv||!dt){msg='Renseigne le club adverse et la date.'}else{await addDoc(collection(db,'matches'),{adv,date:dt,status:'open',result:null})}}
+else if(a==='tog'){const m=matches.find(m=>m.id===id);await updateDoc(doc(db,'matches',id),{status:m.status==='open'?'closed':'open'})}
+else if(a==='res'){await updateDoc(doc(db,'matches',id),{result:x,status:'closed'})}
+else if(a==='del'){if(confirm('Supprimer cette rencontre ?'))await deleteDoc(doc(db,'matches',id))}
+else if(a==='gen'){const n=Math.min(100,+document.getElementById('nb').value||1),b=writeBatch(db),nw=[];for(let i=0;i<n;i++){const c=rnd();nw.push(c);b.set(doc(db,'codes',c),{})}await b.commit();codesList=[...(codesList||[]),...nw]}
+else if(a==='list'){codesList=(await getDocs(collection(db,'codes'))).docs.map(d=>d.id).sort()}
+}catch(err){msg=err.code==='auth/invalid-credential'?'Email ou mot de passe incorrect.':'Action impossible : '+(err.code||err.message)}
+render()});
+</script></body></html>
