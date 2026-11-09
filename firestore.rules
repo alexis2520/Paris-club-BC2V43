@@ -2,28 +2,35 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{d}/documents {
     // Remplace par TON email admin (celui créé dans Firebase Authentication)
-    function admin() { return request.auth != null && request.auth.token.email == 'alexis.bouchaud7@gmail.com'; }
+    function admin() { return request.auth != null && request.auth.token.get('email', '') == 'VOTRE_EMAIL_ADMIN'; }
 
-    match /matches/{m} {
+    match /rencontres/{r} {
       allow read: if true;
       allow write: if admin();
-      match /votes/{v} {
-        allow read: if true;
-        allow create: if get(/databases/$(d)/documents/matches/$(m)).data.status == 'open'
-          && request.resource.data.keys().hasOnly(['choice'])
-          && request.resource.data.choice in ['us', 'them'];
-        allow delete: if admin();
-      }
+      match /matchs/{m} { allow read: if true; allow write: if admin(); }
     }
-    match /codes/{c} {
-      allow get: if true;
-      allow list, write: if admin();
-    }
-    match /voted/{v} {
-      allow get: if true;
-      allow create: if exists(/databases/$(d)/documents/codes/$(request.resource.data.code))
-        && v == request.resource.data.code + '_' + request.resource.data.match;
+    match /settings/{s} { allow read, write: if admin(); }
+    match /players/{p} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == p
+        && request.resource.data.keys().hasOnly(['pseudo', 'points', 'invite'])
+        && request.resource.data.points == 0
+        && request.resource.data.pseudo is string && request.resource.data.pseudo.size() <= 20
+        && request.resource.data.invite == get(/databases/$(d)/documents/settings/invite).data.token;
+      allow update: if admin() || (request.auth != null && request.auth.uid == p
+        && request.resource.data.points == resource.data.points
+        && request.resource.data.keys().hasOnly(['pseudo', 'points', 'invite']));
       allow delete: if admin();
+    }
+    match /bets/{b} {
+      allow read: if admin() || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow create, update: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 'r', 'm', 'choice'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.choice in ['a', 'b']
+        && b == request.auth.uid + '_' + request.resource.data.r + '_' + request.resource.data.m
+        && exists(/databases/$(d)/documents/players/$(request.auth.uid))
+        && request.time < get(/databases/$(d)/documents/rencontres/$(request.resource.data.r)).data.debut;
     }
   }
 }

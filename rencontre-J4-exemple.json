@@ -1,0 +1,10 @@
+{"a":"VDD63-4","b":"BC2V43-2","competition":"Régionale 3","journee":"J4","debut":"2026-11-08T14:01","matchs":[
+{"id":"DD1","nom":"Double dames 1","a":[{"nom":"MABRU F.","niv":"R5","club":"VDD63"},{"nom":"MOREAU N.","niv":"R6","club":"VDD63"}],"b":[{"nom":"GRIEVE N.","niv":"D8","club":"BC2V43"},{"nom":"JEUNE C.","niv":"D8","club":"BC2V43"}]},
+{"id":"DH1","nom":"Double hommes 1","a":[{"nom":"BARGE S.","niv":"R5","club":"VDD63"},{"nom":"KARGA O.","niv":"R4","club":"VDD63"}],"b":[{"nom":"BERNARD S.","niv":"R4","club":"BC2V43"},{"nom":"GRIBELIN O.","niv":"R6","club":"BC2V43"}]},
+{"id":"SH2","nom":"Simple hommes 2","a":[{"nom":"BEAUFUME M.","niv":"R5","club":"VDD63"}],"b":[{"nom":"BOUCHAUD A.","niv":"R6","club":"BC2V43"}]},
+{"id":"SD2","nom":"Simple dames 2","a":[{"nom":"NOLLEVALLE C.","niv":"R6","club":"VDD63"}],"b":[{"nom":"JEUNE C.","niv":"D9","club":"BC2V43"}]},
+{"id":"SD1","nom":"Simple dames 1","a":[{"nom":"MOREAU N.","niv":"R4","club":"VDD63"}],"b":[{"nom":"GARCIA G.","niv":"D7","club":"BC2V43"}]},
+{"id":"SH1","nom":"Simple hommes 1","a":[{"nom":"LONCHAMPT E.","niv":"N3","club":"VDD63"}],"b":[{"nom":"GRIBELIN O.","niv":"R6","club":"BC2V43"}]},
+{"id":"MX2","nom":"Mixte 2","a":[{"nom":"JAMET Y.","niv":"R4","club":"VDD63"},{"nom":"MABRU F.","niv":"R4","club":"VDD63"}],"b":[{"nom":"BOUCHAUD A.","niv":"D8","club":"BC2V43"},{"nom":"GRIEVE N.","niv":"D7","club":"BC2V43"}]},
+{"id":"MX1","nom":"Mixte 1","a":[{"nom":"KARGA O.","niv":"R5","club":"VDD63"},{"nom":"NOLLEVALLE C.","niv":"R4","club":"VDD63"}],"b":[{"nom":"SOULIER A.","niv":"R6","club":"BC2V43"},{"nom":"SOULIER A.","niv":"R4","club":"BC2V43"}]}
+]}

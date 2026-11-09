@@ -1,24 +1,28 @@
-APPLI DE PRONOS INTERCLUBS - BCV 43
-===================================
-Fichiers : index.html, firebase-config.js, firestore.rules, logo.png
+APPLI DE PRONOS INTERCLUBS - BCV 43 (version 2)
+================================================
+Fichiers : index.html, firebase-config.js, firestore.rules, logo.png, rencontre-J4-exemple.json
 
 A. FIREBASE (gratuit)
-1. Va sur console.firebase.google.com > "Créer un projet" (désactive Google Analytics).
-2. Menu "Build" > "Firestore Database" > "Créer une base de données" > région europe-west > mode production.
-3. Onglet "Règles" : ouvre firestore.rules, remplace VOTRE_EMAIL_ADMIN par ton email, copie tout le texte dans la console, clique "Publier".
-4. "Build" > "Authentication" > "Commencer" > active "E-mail/Mot de passe".
-   - Onglet "Users" > "Ajouter un utilisateur" : ton email + un mot de passe (c'est ton accès admin).
+1. console.firebase.google.com > "Créer un projet" (désactive Google Analytics).
+2. "Build" > "Firestore Database" > "Créer" > région europe-west > mode production.
+3. Onglet "Règles" : ouvre firestore.rules, remplace VOTRE_EMAIL_ADMIN par ton email, copie tout dans la console, "Publier".
+4. "Build" > "Authentication" > "Commencer" > "Sign-in method" : active "Anonyme" ET "E-mail/Mot de passe".
+   - Onglet "Users" > "Ajouter un utilisateur" : ton email + mot de passe (accès admin).
    - Onglet "Settings" > "User actions" : DÉCOCHE "Enable create (sign-up)".
    - Onglet "Settings" > "Authorized domains" : ajoute ton-pseudo.github.io.
-5. Roue dentée > "Paramètres du projet" > "Vos applications" > icône web </> > enregistre l'appli > copie les 4 valeurs de firebaseConfig (apiKey, authDomain, projectId, appId) dans firebase-config.js.
+5. Roue dentée > "Paramètres du projet" > "Vos applications" > </> Web > copie apiKey, authDomain, projectId, appId dans firebase-config.js.
 
 B. GITHUB PAGES
-6. Crée un dépôt GitHub public, "Add file" > "Upload files" : envoie index.html, firebase-config.js, logo.png.
-7. "Settings" > "Pages" > Branch "main", dossier "/ (root)" > Save. Ton lien apparaît après 1-2 minutes.
+6. Dépôt GitHub public > "Add file" > "Upload files" : index.html, firebase-config.js, logo.png.
+7. "Settings" > "Pages" > Branch "main", dossier "/ (root)" > Save.
 
 C. UTILISATION
-8. Ouvre le lien, clique "Admin" en bas, connecte-toi.
-9. Génère des codes (1 par membre) et distribue-les. Crée une rencontre.
-10. Les membres ouvrent le lien, entrent leur code et votent. Après la rencontre : "Fermer" puis "Résultat".
+8. Ouvre ton site > "Admin" (en bas de l'onglet Classement) > connecte-toi.
+   Utilise un autre navigateur que celui où tu joues (la connexion admin remplace celle de joueur).
+9. "Créer le lien" : envoie ce lien au club. Chacun l'ouvre, choisit un pseudo et joue. Un nouveau lien ferme l'ancien.
+10. Rencontre : envoie la capture d'écran eBad à Claude, il te rend un fichier .json. Dans Admin > "Importer une rencontre", choisis le fichier et l'heure de début.
+11. Après la rencontre : "Saisir les résultats" (vainqueur de chaque match), puis "Calculer les points".
 
-ANONYMAT : le vote est enregistré sans le code. Le code sert seulement à empêcher de voter 2 fois. Personne, admin compris, ne peut savoir qui a voté quoi. Les points se calculent sur le téléphone de chacun.
+PARIS FERMÉS : impossible de parier (ou modifier un pari) une fois l'heure de début passée, vérifié par Firebase lui-même.
+CONFIDENTIALITÉ : les paris sont privés pour les autres membres (personne ne voit ce que parie un autre). L'admin peut techniquement les lire, car il faut les relier à un joueur pour le classement.
+CHANGEMENT DE TÉLÉPHONE : la connexion est liée à l'appareil. Si quelqu'un change de téléphone, il doit se réinscrire (ses points sont perdus ; tu peux retirer l'ancien joueur).
