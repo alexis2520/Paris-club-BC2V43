@@ -1,25 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{d}/documents {
-    // Remplace par TON email admin (celui créé dans Firebase Authentication)
-    function admin() { return request.auth != null && request.auth.token.get('email', '') == 'VOTRE_EMAIL_ADMIN'; }
+    // Email admin déjà réglé (celui de ton compte Firebase Authentication)
+    function admin() { return request.auth != null && request.auth.token.get('email', '').lower() == 'alexis.bouchaud7@gmail.com'; }
 
     match /rencontres/{r} {
       allow read: if true;
       allow write: if admin();
       match /matchs/{m} { allow read: if true; allow write: if admin(); }
     }
+    match /clubs/{c} { allow read: if true; allow write: if admin(); }
+    match /cartes/{c} { allow read, write: if admin(); }
     match /settings/{s} { allow read, write: if admin(); }
     match /players/{p} {
       allow read: if true;
       allow create: if request.auth != null && request.auth.uid == p
-        && request.resource.data.keys().hasOnly(['pseudo', 'points', 'invite'])
+        && request.resource.data.keys().hasOnly(['pseudo', 'prenom', 'nom', 'points', 'invite'])
         && request.resource.data.points == 0
-        && request.resource.data.pseudo is string && request.resource.data.pseudo.size() <= 20
+        && request.resource.data.pseudo is string && request.resource.data.pseudo.size() <= 40
+        && request.resource.data.prenom is string && request.resource.data.prenom.size() > 0 && request.resource.data.prenom.size() <= 30
+        && request.resource.data.nom is string && request.resource.data.nom.size() > 0 && request.resource.data.nom.size() <= 30
         && request.resource.data.invite == get(/databases/$(d)/documents/settings/invite).data.token;
       allow update: if admin() || (request.auth != null && request.auth.uid == p
         && request.resource.data.points == resource.data.points
-        && request.resource.data.keys().hasOnly(['pseudo', 'points', 'invite']));
+        && request.resource.data.keys().hasOnly(['pseudo', 'prenom', 'nom', 'points', 'invite']));
       allow delete: if admin();
     }
     match /bets/{b} {

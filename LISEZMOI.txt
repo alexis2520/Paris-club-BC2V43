@@ -6,7 +6,7 @@ A. FIREBASE (gratuit)
 1. console.firebase.google.com > "Créer un projet" (désactive Google Analytics).
 2. "Build" > "Firestore Database" > "Créer" > région europe-west > mode production.
 3. Onglet "Règles" : ouvre firestore.rules, remplace VOTRE_EMAIL_ADMIN par ton email, copie tout dans la console, "Publier".
-4. "Build" > "Authentication" > "Commencer" > "Sign-in method" : active "Anonyme" ET "E-mail/Mot de passe".
+4. "Build" > "Authentication" > "Commencer" > "Sign-in method" : active "E-mail/Mot de passe" (l'option "Anonyme" n'est plus utilisée).
    - Onglet "Users" > "Ajouter un utilisateur" : ton email + mot de passe (accès admin).
    - Onglet "Settings" > "User actions" : laisse "Enable create (sign-up)" COCHÉ (sinon les joueurs ne peuvent pas rejoindre).
    - Onglet "Settings" > "Authorized domains" : ajoute ton-pseudo.github.io.
@@ -20,9 +20,17 @@ C. UTILISATION
 8. Ouvre ton site > "Admin" (en bas de l'onglet Classement) > connecte-toi.
    Utilise un autre navigateur que celui où tu joues (la connexion admin remplace celle de joueur).
 9. "Créer le lien" : envoie ce lien au club. Chacun l'ouvre, choisit un pseudo et joue. Un nouveau lien ferme l'ancien.
-10. Rencontre : Admin > "Nouvelle rencontre" : équipes, date, heure de début, puis un match par ligne (envoie la capture eBad à Claude pour qu'il te prépare ce texte à coller). Date et heure sont gardées pour enchaîner plusieurs rencontres.
+10. Admin > "Cartes joueur" : crée une carte par joueur (prénom, nom, club, classement et points en simple, double, mixte). Puis "Rencontres" > "Nouvelle rencontre" : équipes, date, heure de début, et ajoute chaque match avec les listes déroulantes (type de match, puis joueurs). Date et heure sont gardées pour enchaîner plusieurs rencontres.
 11. Après la rencontre : "Saisir les résultats" (vainqueur de chaque match), puis "Calculer les points".
 
 PARIS FERMÉS : impossible de parier (ou modifier un pari) une fois l'heure de début passée, vérifié par Firebase lui-même.
 CONFIDENTIALITÉ : les paris sont privés pour les autres membres (personne ne voit ce que parie un autre). L'admin peut techniquement les lire, car il faut les relier à un joueur pour le classement.
-CHANGEMENT DE TÉLÉPHONE : la connexion est liée à l'appareil. Si quelqu'un change de téléphone, il doit se réinscrire (ses points sont perdus ; tu peux retirer l'ancien joueur).
+CHANGEMENT DE TÉLÉPHONE : le joueur entre simplement son prénom et son nom, il retrouve ses paris et ses points. Pas de code : toute personne qui connaît le nom d'un joueur peut se connecter à sa place (acceptable pour un petit club, tu peux retirer un joueur dans Admin).
+
+LOGOS ET PROBABILITÉS
+- Admin > "Logos des clubs" : choisis une image pour chaque club (le logo du BCV est déjà inclus).
+- Probabilité de victoire : calculée avec les points des cartes joueur (somme des points d'un camp divisée par la somme des deux camps), pour la discipline du match.
+
+POINTS
+- Un bon pronostic rapporte 100 moins la probabilité de victoire du camp choisi, en entier, minimum 1 point (0 % = 100 points, 50 % = 50 points, 100 % = 1 point). Sans probabilité (points manquants sur les cartes), le gain est de 50.
+- Choix des clubs et des joueurs : une fenêtre de recherche (barre de recherche, filtre par club). Le numéro d'équipe se saisit à part.
