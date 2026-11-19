@@ -4,6 +4,8 @@ service cloud.firestore {
     // Email admin déjà réglé (celui de ton compte Firebase Authentication)
     function admin() { return request.auth != null && request.auth.token.get('email', '').lower() == 'alexis.bouchaud7@gmail.com'; }
 
+    function joueur() { return request.auth != null && exists(/databases/$(d)/documents/players/$(request.auth.uid)); }
+
     match /rencontres/{r} {
       allow read: if true;
       allow write: if admin();
@@ -25,6 +27,21 @@ service cloud.firestore {
         && request.resource.data.points == resource.data.points
         && request.resource.data.keys().hasOnly(['pseudo', 'prenom', 'nom', 'points', 'invite']));
       allow delete: if admin();
+    }
+    // Score en direct : le premier joueur qui lance le comptage en devient le seul scoreur
+    match /lives/{l} {
+      allow read: if true;
+      allow create: if (joueur() || admin()) && request.resource.data.owner == request.auth.uid;
+      allow update: if request.auth != null && (resource.data.owner == request.auth.uid || admin())
+        && request.resource.data.owner == resource.data.owner;
+      allow delete: if admin();
+      match /items/{i} {
+        allow read: if true;
+        allow create: if (joueur() || admin())
+          && request.resource.data.keys().hasOnly(['k','x','team','n','c','u','t','a'])
+          && request.resource.data.n is string && request.resource.data.n.size() <= 40;
+        allow update, delete: if false;
+      }
     }
     match /bets/{b} {
       allow read: if admin() || (request.auth != null && resource.data.uid == request.auth.uid);
