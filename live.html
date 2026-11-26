@@ -165,7 +165,7 @@ function calc(M){const sets=[],w=[0,0];let first=M.first;
 const total=M=>M.log.reduce((s,l)=>s+l.length,0);
 const snap=M=>{const c=calc(M);return{p:total(M),s:c.w[0]+c.w[1],o:c.over}};
 
-let RID='',MID='',MT=null,RE=null,isAdm=false,pseudo='';
+let LA='',LB='',RID='',MID='',MT=null,RE=null,isAdm=false,pseudo='';
 const PDOM='@bcv43-pronos.fr';
 async function init(){
  const q=new URLSearchParams(location.search);RID=q.get('r')||'';MID=q.get('m')||'';
@@ -174,7 +174,7 @@ async function init(){
  if(u){uid=u.uid;isAdm=!!(u.email&&!u.email.endsWith(PDOM));
   if(!isAdm){try{const p=await db.doc('players/'+uid).get();if(p.exists)pseudo=p.data().pseudo||''}catch(e){}}
   cfg.name=isAdm?'Admin':pseudo}
- try{const[r,m]=await Promise.all([db.doc('rencontres/'+RID).get(),db.doc('rencontres/'+RID+'/matchs/'+MID).get()]);if(r.exists&&m.exists){RE=r.data();MT=m.data()}}catch(e){}
+ try{const[r,m]=await Promise.all([db.doc('rencontres/'+RID).get(),db.doc('rencontres/'+RID+'/matchs/'+MID).get()]);if(r.exists&&m.exists){RE=r.data();MT=m.data();const nm=x=>x.map(z=>z.nom).join(' / ');LA=RE.type==='tournoi'?nm(MT.a):RE.a;LB=RE.type==='tournoi'?nm(MT.b):RE.b}}catch(e){}
  if(!MT){waitView();return}
  code=MT.nom;mpath='lives/'+RID+'_'+MID;let sc=false;
  try{const g=await db.doc(mpath).get();if(g.exists){const d=g.data();if(uid&&d.owner===uid){d.pl=d.pl.map(x=>typeof x==='string'?JSON.parse(x):x);S=d;sc=true}}}catch(e){}
@@ -183,17 +183,17 @@ function home(){clear();location.href='index.html?go='+encodeURIComponent(RID)+'
 function betSheet(){home()}
 function waitView(){$app.replaceChildren();const p=el('div','page');p.append(el('h2','t',MT?MT.nom:'Direct'));
  if(!MT)p.append(el('p','sub','Match introuvable.'));
- else{p.append(el('p','sub',RE.a+' contre '+RE.b));
+ else{p.append(el('p','sub',LA+' contre '+LB));
   if(uid&&(isAdm||pseudo)){
    p.append(el('p','sub','Personne ne compte ce match pour l’instant : tu peux lancer le comptage.'));
    const c=el('div','card');c.append(el('label',null,'Qui sert en premier ?'));const sg=el('div','seg');
-   [RE.a,RE.b].forEach((n,k)=>{const b=el('button',ST.first===k?'on':'',n);b.onclick=()=>{ST.first=k;waitView()};sg.append(b)});c.append(sg);
-   [0,1].forEach(k=>{c.append(el('label',null,'Couleur '+(k?RE.b:RE.a)));const sw=el('div','sw');PAL.forEach(col=>{const b=el('button',col===ST.col[k]?'on':'');b.style.background=col;b.onclick=()=>{ST.col[k]=col;waitView()};sw.append(b)});c.append(sw)});
+   [LA,LB].forEach((n,k)=>{const b=el('button',ST.first===k?'on':'',n);b.onclick=()=>{ST.first=k;waitView()};sg.append(b)});c.append(sg);
+   [0,1].forEach(k=>{c.append(el('label',null,'Couleur '+(k?LB:LA)));const sw=el('div','sw');PAL.forEach(col=>{const b=el('button',col===ST.col[k]?'on':'');b.style.background=col;b.onclick=()=>{ST.col[k]=col;waitView()};sw.append(b)});c.append(sw)});
    p.append(c);const go=el('button','btn pri','Lancer le comptage');go.style.width='100%';go.onclick=lancer;p.append(go)}
   else p.append(el('p','sub',uid?'Le comptage n’a pas encore commencé. Cette page se met à jour toute seule.':'Le comptage n’a pas encore commencé. Connecte-toi dans l’appli de paris pour le lancer.'))}
  const bk=el('button','btn','Retour aux paris');bk.style.cssText='width:100%;margin-top:10px';bk.onclick=home;p.append(bk);$app.append(p)}
 async function lancer(){const pl=[MT.a.map(x=>x.nom),MT.b.map(x=>x.nom)];
- const M={t:pl[0].length>1?'d':'s',title:RE.a+' – '+RE.b,first:ST.first,pl,cl:[RE.a,RE.b],col:ST.col.slice(),log:[''],t0:Date.now(),owner:uid,win:null,sc:'',sa:0,sb:0};
+ const M={t:pl[0].length>1?'d':'s',title:RE.type==='tournoi'?RE.a:LA+' – '+LB,first:ST.first,pl,cl:RE.type==='tournoi'?['','']:[LA,LB],col:ST.col.slice(),log:[''],t0:Date.now(),owner:uid,win:null,sc:'',sa:0,sb:0};
  try{await db.doc(mpath).set({...M,pl:M.pl.map(a=>JSON.stringify(a))})}catch(e){alert('Lancement impossible ('+(e.code||e.message)+').');return}
  S=M;openMatch(code,true)}
 const fmt=M=>{const t=Math.max(0,Math.floor(((M.t1||Date.now())-M.t0)/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),x=t%60,z=n=>String(n).padStart(2,'0');return(h?h+':'+z(m):m)+':'+z(x)};

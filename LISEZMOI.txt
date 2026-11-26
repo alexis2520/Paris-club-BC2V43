@@ -19,3 +19,8 @@ Un seul site, un seul Firebase (le même que tes pronos). Rien à recréer.
    - Bouton "Parier" dans le direct = retour au match dans l'appli de paris (fermé après l'heure de début).
    - ADMIN : "Saisir les résultats" montre le résultat du live avec "Valider ce résultat" (un clic),
      puis "Calculer les points". "Réinitialiser le direct" annule un comptage lancé par erreur.
+
+4. INTERCLUB OU TOURNOI (admin > Rencontres > Nouvelle rencontre)
+   - Interclub : deux clubs ; n° d'équipe, compétition et journée sont facultatifs.
+   - Tournoi : un nom de tournoi + date/heure, puis des matchs joueur contre joueur (cartes joueur).
+   Seuls index.html et live.html changent ; les règles Firebase restent les mêmes.
